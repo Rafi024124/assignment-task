@@ -24,12 +24,14 @@ export default function ProductForm({ product = null, onSubmit }) {
     const fetchCategories = async () => {
       try {
         setCategoriesLoading(true);
-        const res = await axios.get(`https://api.bitechx.com/categories?offset=0&limit=50`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          `https://api.bitechx.com/categories?offset=0&limit=50`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         setCategories(res.data);
       } catch (err) {
         console.error("Failed to fetch categories", err);
+        setSubmitError("Failed to fetch categories");
       } finally {
         setCategoriesLoading(false);
       }
@@ -53,6 +55,11 @@ export default function ProductForm({ product = null, onSubmit }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Clear previous errors
+    setErrors({});
+    setSubmitError("");
+
     if (!validate()) return;
 
     const payload = {
@@ -64,7 +71,7 @@ export default function ProductForm({ product = null, onSubmit }) {
     };
 
     setLoading(true);
-    setSubmitError("");
+
     try {
       await onSubmit(payload, token);
     } catch (err) {
@@ -96,10 +103,16 @@ export default function ProductForm({ product = null, onSubmit }) {
         <input
           type="text"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            setErrors((prev) => ({ ...prev, name: "" }));
+            setSubmitError("");
+          }}
           className="w-full px-3 py-2 rounded-md border border-[#5E6572] bg-[#252B2A] text-[#EEF1EF] focus:outline-none focus:ring-2 focus:ring-[#7D98A1]"
         />
-        {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
+        {errors.name && (
+          <p className="text-red-400 text-sm mt-1">{errors.name}</p>
+        )}
       </div>
 
       {/* Description */}
@@ -107,10 +120,16 @@ export default function ProductForm({ product = null, onSubmit }) {
         <label className="block mb-1 text-[#A9B4C2]">Description *</label>
         <textarea
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            setErrors((prev) => ({ ...prev, description: "" }));
+            setSubmitError("");
+          }}
           className="w-full px-3 py-2 rounded-md border border-[#5E6572] bg-[#252B2A] text-[#EEF1EF] focus:outline-none focus:ring-2 focus:ring-[#7D98A1]"
         />
-        {errors.description && <p className="text-red-400 text-sm mt-1">{errors.description}</p>}
+        {errors.description && (
+          <p className="text-red-400 text-sm mt-1">{errors.description}</p>
+        )}
       </div>
 
       {/* Price */}
@@ -119,23 +138,37 @@ export default function ProductForm({ product = null, onSubmit }) {
         <input
           type="number"
           value={price}
-          onChange={(e) => setPrice(e.target.value)}
+          onChange={(e) => {
+            setPrice(e.target.value);
+            setErrors((prev) => ({ ...prev, price: "" }));
+            setSubmitError("");
+          }}
           className="w-full px-3 py-2 rounded-md border border-[#5E6572] bg-[#252B2A] text-[#EEF1EF] focus:outline-none focus:ring-2 focus:ring-[#7D98A1]"
         />
-        {errors.price && <p className="text-red-400 text-sm mt-1">{errors.price}</p>}
+        {errors.price && (
+          <p className="text-red-400 text-sm mt-1">{errors.price}</p>
+        )}
       </div>
 
       {/* Images */}
       <div className="mb-4">
-        <label className="block mb-1 text-[#A9B4C2]">Images (comma separated) *</label>
+        <label className="block mb-1 text-[#A9B4C2]">
+          Images (comma separated) *
+        </label>
         <input
           type="text"
           value={images}
-          onChange={(e) => setImages(e.target.value)}
+          onChange={(e) => {
+            setImages(e.target.value);
+            setErrors((prev) => ({ ...prev, images: "" }));
+            setSubmitError("");
+          }}
           placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
           className="w-full px-3 py-2 rounded-md border border-[#5E6572] bg-[#252B2A] text-[#EEF1EF] focus:outline-none focus:ring-2 focus:ring-[#7D98A1]"
         />
-        {errors.images && <p className="text-red-400 text-sm mt-1">{errors.images}</p>}
+        {errors.images && (
+          <p className="text-red-400 text-sm mt-1">{errors.images}</p>
+        )}
       </div>
 
       {/* Category */}
@@ -143,7 +176,11 @@ export default function ProductForm({ product = null, onSubmit }) {
         <label className="block mb-1 text-[#A9B4C2]">Category *</label>
         <select
           value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
+          onChange={(e) => {
+            setCategoryId(e.target.value);
+            setErrors((prev) => ({ ...prev, categoryId: "" }));
+            setSubmitError("");
+          }}
           className="w-full px-3 py-2 rounded-md border border-[#5E6572] bg-[#252B2A] text-[#EEF1EF] focus:outline-none focus:ring-2 focus:ring-[#7D98A1]"
         >
           <option value="">
@@ -155,7 +192,9 @@ export default function ProductForm({ product = null, onSubmit }) {
             </option>
           ))}
         </select>
-        {errors.categoryId && <p className="text-red-400 text-sm mt-1">{errors.categoryId}</p>}
+        {errors.categoryId && (
+          <p className="text-red-400 text-sm mt-1">{errors.categoryId}</p>
+        )}
       </div>
 
       <button
