@@ -21,7 +21,7 @@ const ProductForm = dynamic(() => import("@/components/ProductForm"), {
   loading: () => <Loader />,
 });
 
-// 🌟 SafeImage component
+
 function SafeImage({ src, alt, ...props }) {
   const [imgSrc, setImgSrc] = useState(src);
 
@@ -40,7 +40,7 @@ function SafeImage({ src, alt, ...props }) {
 export default function ProductsPage() {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
-  const { list: products, categories, loading } = useSelector(
+  const { list: products, categories, loading, error } = useSelector(
     (state) => state.products
   );
 
@@ -177,24 +177,30 @@ export default function ProductsPage() {
 
       
       {loading && <Loader />}
+      
+     {!token ? (
+  <p className="mt-6 text-[#EEF1EF]">Please log in to see the products.</p>
+) : loading ? (
+  <Loader />
+) : error ? (
+  <p className="mt-6 text-[#EEF1EF]">{error}</p>
+) : products.length > 0 ? (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {products.map((p, index) => (
+      <ProductCard
+        key={p.id || index}
+        product={p}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        index={index}
+      />
+    ))}
+  </div>
+) : (
+  <p className="mt-6 text-[#EEF1EF]">No products found.</p>
+)}
 
-     
-      {!loading && products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((p, index) => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              index={index}
-            />
-          ))}
-        </div>
-      ) : (
-        !loading && <p className="mt-6 text-[#EEF1EF]">No products found.</p>
-      )}
-
+          
       {/* Pagination */}
       <div className="mt-6 flex justify-center gap-4 flex-wrap">
         <button

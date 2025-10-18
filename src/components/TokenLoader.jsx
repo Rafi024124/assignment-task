@@ -12,5 +12,5 @@ export default function TokenLoader() {
     if (token) dispatch(setToken(token));
   }, [dispatch]);
 
-  return null; // It doesn’t render anything
+  return null; 
 }

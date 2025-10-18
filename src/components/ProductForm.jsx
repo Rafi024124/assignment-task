@@ -19,7 +19,7 @@ export default function ProductForm({ product = null, onSubmit }) {
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  // Fetch categories
+  
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -40,7 +40,7 @@ export default function ProductForm({ product = null, onSubmit }) {
     if (token) fetchCategories();
   }, [token]);
 
-  // Validation
+  
   const validate = () => {
     const errs = {};
     if (!name.trim()) errs.name = "Name is required";
@@ -56,7 +56,7 @@ export default function ProductForm({ product = null, onSubmit }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Clear previous errors
+   
     setErrors({});
     setSubmitError("");
 
@@ -97,7 +97,7 @@ export default function ProductForm({ product = null, onSubmit }) {
 
       {submitError && <p className="text-red-400 mb-3">{submitError}</p>}
 
-      {/* Name */}
+      
       <div className="mb-4">
         <label className="block mb-1 text-[#A9B4C2]">Name *</label>
         <input
@@ -115,7 +115,7 @@ export default function ProductForm({ product = null, onSubmit }) {
         )}
       </div>
 
-      {/* Description */}
+     
       <div className="mb-4">
         <label className="block mb-1 text-[#A9B4C2]">Description *</label>
         <textarea
@@ -132,7 +132,7 @@ export default function ProductForm({ product = null, onSubmit }) {
         )}
       </div>
 
-      {/* Price */}
+    
       <div className="mb-4">
         <label className="block mb-1 text-[#A9B4C2]">Price *</label>
         <input
@@ -150,7 +150,7 @@ export default function ProductForm({ product = null, onSubmit }) {
         )}
       </div>
 
-      {/* Images */}
+  
       <div className="mb-4">
         <label className="block mb-1 text-[#A9B4C2]">
           Images (comma separated) *
@@ -171,7 +171,7 @@ export default function ProductForm({ product = null, onSubmit }) {
         )}
       </div>
 
-      {/* Category */}
+    
       <div className="mb-4">
         <label className="block mb-1 text-[#A9B4C2]">Category *</label>
         <select

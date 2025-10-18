@@ -9,6 +9,27 @@ import ProductForm from "@/components/ProductForm";
 import { fetchProducts } from "@/redux/slices/productsSlice";
 import Loader from "@/components/Loader";
 
+// SafeImage Component
+function SafeImage({ src, alt, className, ...props }) {
+  const [imgSrc, setImgSrc] = useState(src);
+
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
+
+  const isValid = imgSrc && imgSrc.startsWith("http");
+
+  return (
+    <img
+      src={isValid ? imgSrc : "/placeholder.png"}
+      alt={alt || "Image"}
+      className={className}
+      {...props}
+      onError={() => setImgSrc("/placeholder.png")}
+    />
+  );
+}
+
 export default function SingleProductPage() {
   const { slug } = useParams();
   const router = useRouter();
@@ -21,6 +42,7 @@ export default function SingleProductPage() {
   const [editingProduct, setEditingProduct] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
 
+  // Fetch product
   const fetchProduct = useCallback(async () => {
     if (!slug || !token) return;
     try {
@@ -39,8 +61,11 @@ export default function SingleProductPage() {
     }
   }, [slug, token]);
 
-  useEffect(() => { fetchProduct(); }, [fetchProduct]);
+  useEffect(() => {
+    fetchProduct();
+  }, [fetchProduct]);
 
+  // Delete product
   const handleDelete = useCallback(async () => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -69,45 +94,47 @@ export default function SingleProductPage() {
     }
   }, [product, token, dispatch, router]);
 
-  const handleEdit = async () => {
-    const result = await Swal.fire({
-      title: "Edit Product?",
-      text: "You can update the product details.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Edit",
-      cancelButtonText: "Cancel",
-    });
-
-    if (result.isConfirmed) {
-      setEditingProduct(true);
-    }
-  };
-
-  const handleUpdate = useCallback(async (payload) => {
-    try {
-      const res = await fetch(`https://api.bitechx.com/products/${product.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+  // Update product with confirmation
+  const handleUpdate = useCallback(
+    async (payload) => {
+      const result = await Swal.fire({
+        title: "Confirm Update?",
+        text: "Do you want to update the product details?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Update",
+        cancelButtonText: "Cancel",
       });
 
-      if (!res.ok) throw new Error("Failed to update product");
-      const updatedProduct = await res.json();
-      setProduct(updatedProduct);
-      setEditingProduct(false);
-      setCurrentImage(0);
-      Swal.fire("Updated!", "Product updated successfully.", "success");
-    } catch (err) {
-      Swal.fire("Error!", err.message, "error");
-    }
-  }, [product, token]);
+      if (!result.isConfirmed) return;
 
-  const handlePrevImage = () => setCurrentImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
-  const handleNextImage = () => setCurrentImage((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
+      try {
+        const res = await fetch(`https://api.bitechx.com/products/${product.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) throw new Error("Failed to update product");
+        const updatedProduct = await res.json();
+        setProduct(updatedProduct);
+        setEditingProduct(false);
+        setCurrentImage(0);
+        Swal.fire("Updated!", "Product updated successfully.", "success");
+      } catch (err) {
+        Swal.fire("Error!", err.message, "error");
+      }
+    },
+    [product, token]
+  );
+
+  const handlePrevImage = () =>
+    setCurrentImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+  const handleNextImage = () =>
+    setCurrentImage((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
 
   if (!token) return <p className="text-[#EEF1EF]">Please login to view this product.</p>;
   if (loading) return <Loader />;
@@ -130,13 +157,14 @@ export default function SingleProductPage() {
         <div className="flex-1">
           <div className="relative w-full h-96 rounded-xl overflow-hidden bg-gradient-to-br from-[#7D98A1]/20 via-[#5E6572]/20 to-[#A9B4C2]/20 backdrop-blur-md shadow-lg flex items-center justify-center">
             {product.images?.[currentImage] ? (
-              <Image
-                src={product.images[currentImage].startsWith("http") ? product.images[currentImage] : "/placeholder.png"}
+              <SafeImage
+                src={product.images[currentImage]}
                 alt={`${product.name} image`}
-                fill
-                className="object-contain rounded-xl"
+                className="object-contain rounded-xl w-full h-full"
               />
-            ) : <p>No image available</p>}
+            ) : (
+              <p>No image available</p>
+            )}
 
             {product.images?.length > 1 && (
               <>
@@ -166,12 +194,7 @@ export default function SingleProductPage() {
                   }`}
                   onClick={() => setCurrentImage(idx)}
                 >
-                  <Image
-                    src={img.startsWith("http") ? img : "/placeholder.png"}
-                    alt={`${product.name} ${idx}`}
-                    fill
-                    className="object-cover"
-                  />
+                  <SafeImage src={img} alt={`${product.name} ${idx}`} className="object-cover w-full h-full" />
                 </div>
               ))}
             </div>
@@ -186,7 +209,7 @@ export default function SingleProductPage() {
             <div className="flex items-center gap-3">
               {product.category.image && (
                 <div className="relative w-12 h-12 rounded-full overflow-hidden border border-[#5E6572]">
-                  <Image src={product.category.image} alt={product.category.name} fill className="object-cover" />
+                  <SafeImage src={product.category.image} alt={product.category.name} className="object-cover w-full h-full" />
                 </div>
               )}
               <p className="text-sm">Category: <span className="font-semibold">{product.category.name}</span></p>
@@ -206,7 +229,7 @@ export default function SingleProductPage() {
           {/* Buttons */}
           <div className="flex gap-3 mt-4">
             <button
-              onClick={handleEdit}
+              onClick={() => setEditingProduct(true)}
               className="flex-1 px-4 py-2 rounded-md text-white bg-yellow-400 border border-yellow-300 transition transform hover:scale-105 hover:animate-shake"
             >
               Edit

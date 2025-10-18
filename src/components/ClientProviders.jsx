@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Provider, useDispatch } from "react-redux";
-import { store } from "@/redux/store"; // ✅ fixed import
+import { store } from "@/redux/store"; 
 import { setToken } from "@/redux/slices/authSlice";
 import Navbar from "./Navbar";
 
-// Separate client component that runs inside the Provider
+
 function InnerClient({ children }) {
   const [mounted, setMounted] = useState(false);
   const dispatch = useDispatch();
@@ -26,7 +26,7 @@ function InnerClient({ children }) {
   );
 }
 
-// Wrapper that provides Redux store
+
 export default function ClientProviders({ children }) {
   return (
     <Provider store={store}>
