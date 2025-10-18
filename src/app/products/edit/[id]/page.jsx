@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import ProductForm from "@/components/ProductForm";
-import { fetchSingleProduct, updateProduct } from "@/redux/slices/productsSlice";
+import {  updateProduct } from "@/redux/slices/productsSlice";
 
 export default function EditProductPage() {
   const { id } = useParams();
