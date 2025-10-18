@@ -8,7 +8,7 @@ export default function Navbar() {
   const token = useSelector((state) => state.auth.token);
 
   return (
-    <nav className="bg-[#1C2321] backdrop-blur-md p-4 flex gap-4 shadow-lg">
+    <nav className="bg-[#1C2321] backdrop-blur-md p-4  gap-4 shadow-lg flex justify-center">
       <Link
         href="/products"
         className="text-[#5E6572] font-semibold hover:text-[#EEF1EF] hover:underline transition"
@@ -27,7 +27,7 @@ export default function Navbar() {
           <button
             onClick={() => {
               dispatch(logout());
-              window.location.href = "/"; // refresh page after logout
+              window.location.href = "/"; 
             }}
             className="text-[#EE6C6C] font-semibold hover:text-[#EEF1EF] hover:underline transition"
           >

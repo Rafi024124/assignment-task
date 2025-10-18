@@ -49,14 +49,14 @@ export default function ProductsPage() {
   const [offset, setOffset] = useState(0);
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // Fetch categories once
+  //fetch cat
   useEffect(() => {
     if (token && categories.length === 0) {
       dispatch(fetchCategories({ token }));
     }
   }, [token, dispatch, categories.length]);
 
-  // Fetch products based on category/search
+  // Fetch prod
   useEffect(() => {
     if (!token) return;
     if (selectedCategory) {
@@ -66,7 +66,7 @@ export default function ProductsPage() {
     }
   }, [token, offset, selectedCategory, dispatch, search]);
 
-  // Debounced search
+  //debounce
   const debouncedSearch = useMemo(
     () =>
       debounce((value) => {
@@ -86,7 +86,7 @@ export default function ProductsPage() {
     return () => debouncedSearch.cancel();
   }, [search, debouncedSearch]);
 
-  // Delete with confirmation
+  // Delete
   const handleDelete = useCallback(
     async (id) => {
       const result = await Swal.fire({
@@ -104,7 +104,7 @@ export default function ProductsPage() {
     [dispatch, token]
   );
 
-  // Edit confirmation
+  // Edit 
   const handleEdit = useCallback(
     async (product) => {
       const result = await Swal.fire({
@@ -147,10 +147,11 @@ export default function ProductsPage() {
   }, []);
 
   return (
-    <div className="p-6 min-h-screen bg-[#1C2321] text-[#EEF1EF]">
+    <div className="bg-[#1C2321] text-[#EEF1EF]">
+       <div className="p-6 min-h-screen  max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Products</h1>
 
-      {/* Filters */}
+     
       <div className="mb-6 flex flex-wrap gap-3">
         <select
           value={selectedCategory}
@@ -174,10 +175,10 @@ export default function ProductsPage() {
         />
       </div>
 
-      {/* Loader */}
+      
       {loading && <Loader />}
 
-      {/* Products Grid */}
+     
       {!loading && products.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((p, index) => (
@@ -226,18 +227,21 @@ export default function ProductsPage() {
         </div>
       )}
     </div>
+    </div>
+   
   );
 }
 
-// Optimized ProductCard
+
 const ProductCard = React.memo(({ product, onEdit, onDelete, index }) => (
   <div className="relative flex flex-col rounded-xl overflow-hidden border border-[#5E6572] bg-gradient-to-br from-[#7D98A1]/20 via-[#5E6572]/20 to-[#A9B4C2]/20 backdrop-blur-md shadow-lg transition hover:shadow-amber-50 group">
-    {/* Image */}
+   
     <div className="relative w-full h-56">
-      <SafeImage src={product.images?.[0]} alt={product.name} className="object-cover w-full h-full" />
+      <SafeImage src={product.images?.[0]} alt={product.name} 
+       className="object-contain w-full h-full transition-transform duration-300 ease-in-out hover:scale-105" />
     </div>
 
-    {/* Info */}
+   
     <div className="p-4 flex flex-col flex-1">
       <h2 className="text-xl font-bold mb-2">{product.name}</h2>
       <p className="text-[#EEF1EF] mb-3 line-clamp-2 flex-1">{product.description}</p>

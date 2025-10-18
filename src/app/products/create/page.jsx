@@ -18,7 +18,7 @@ export default function CreateProductPage() {
 
     if (!res.ok) throw new Error("Failed to create product");
     const data = await res.json();
-    router.push(`/products/${data.slug}`); // go to product detail page
+    router.push(`/products/${data.slug}`); 
   };
 
   return (
@@ -30,16 +30,7 @@ export default function CreateProductPage() {
         <ProductForm onSubmit={handleCreate} buttonClassName="bg-blue-400 hover:bg-blue-500 text-[#EEF1EF] transition transform hover:scale-105 hover:animate-shake" />
       </div>
 
-      {/* Button shake animation */}
-      <style jsx>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-2px); }
-          50% { transform: translateX(2px); }
-          75% { transform: translateX(-2px); }
-        }
-        .animate-shake { animation: shake 0.3s ease-in-out; }
-      `}</style>
+     
     </div>
   );
 }

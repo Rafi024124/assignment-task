@@ -62,7 +62,7 @@ export default function LoginPage() {
               color: "#1C2321",
             }}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? <span className="loading loading-spinner loading-md"></span> : "Login"}
           </button>
         </div>
 
