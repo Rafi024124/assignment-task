@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+
+import { fetchCategories } from "@/redux/slices/productsSlice";
+import { useDispatch } from "react-redux";
 
 export default function ProductForm({ product = null, onSubmit }) {
-  const token = useSelector((state) => state.auth.token);
+  const dispatch = useDispatch();
 
-  const [categories, setCategories] = useState([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const token = useSelector((state) => state.auth.token);
+ const { categories, loading: categoriesLoading, error } = useSelector((state) => state.products);
+  
 
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
@@ -20,25 +23,11 @@ export default function ProductForm({ product = null, onSubmit }) {
   const [submitError, setSubmitError] = useState("");
 
   
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setCategoriesLoading(true);
-        const res = await axios.get(
-          `https://api.bitechx.com/categories?offset=0&limit=50`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setCategories(res.data);
-      } catch (err) {
-        console.error("Failed to fetch categories", err);
-        setSubmitError("Failed to fetch categories");
-      } finally {
-        setCategoriesLoading(false);
-      }
-    };
-
-    if (token) fetchCategories();
-  }, [token]);
+ useEffect(() => {
+  if (token) {
+    dispatch(fetchCategories({ token }));
+  }
+}, [token, dispatch]);
 
   
   const validate = () => {
@@ -73,7 +62,7 @@ export default function ProductForm({ product = null, onSubmit }) {
     setLoading(true);
 
     try {
-      await onSubmit(payload, token);
+      await onSubmit(payload);
     } catch (err) {
       setSubmitError(err.message || "Something went wrong");
     } finally {
@@ -186,11 +175,12 @@ export default function ProductForm({ product = null, onSubmit }) {
           <option value="">
             {categoriesLoading ? "Loading categories..." : "Select Category"}
           </option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
+          {categories?.map((cat) => (
+  <option key={cat.id} value={cat.id}>
+    {cat.name}
+  </option>
+))}
+
         </select>
         {errors.categoryId && (
           <p className="text-red-400 text-sm mt-1">{errors.categoryId}</p>

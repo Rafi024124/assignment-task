@@ -9,13 +9,12 @@ export default function CreateProductPage() {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const { loading, error } = useSelector((state) => state.products);
+  const { loadingList, errorList } = useSelector((state) => state.products);
 
-  const handleCreate = async (payload, token) => {
+  const handleCreate = async (payload) => {
     try {
-      const resultAction = await dispatch(createProduct({ token, payload }));
+      const resultAction = await dispatch(createProduct({ payload }));
 
-      // check if fulfilled
       if (createProduct.fulfilled.match(resultAction)) {
         const createdProduct = resultAction.payload;
         router.push(`/products/${createdProduct.slug}`);
@@ -37,15 +36,14 @@ export default function CreateProductPage() {
           Create New Product
         </h1>
 
-        {/* show loading/error state */}
-        {loading && (
+        {loadingList && (
           <p className="text-center text-blue-300 mb-4 animate-pulse">
             Creating product...
           </p>
         )}
-        {error && (
+        {errorList && (
           <p className="text-center text-red-400 mb-4">
-            Error: {error.message || error}
+            Error: {typeof errorList === "string" ? errorList : errorList.message}
           </p>
         )}
 

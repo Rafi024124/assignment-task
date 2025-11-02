@@ -10,7 +10,11 @@ export const loginUser = createAsyncThunk(
       const res = await axios.post("https://api.bitechx.com/auth", { email });
       return res.data.token;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Login failed");
+      const message =
+        error.response?.data?.message ||  
+        error.response?.data ||          
+        "Login failed";
+      return rejectWithValue(message);
     }
   }
 );

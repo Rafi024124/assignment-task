@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import { useSelector, useDispatch } from "react-redux";
-import Swal from "sweetalert2";
 import ProductForm from "@/components/ProductForm";
-import { fetchProducts } from "@/redux/slices/productsSlice";
 import Loader from "@/components/Loader";
+import useDeleteProduct from "@/app/hooks/useDeleteProduct";
+import useUpdateProduct from "@/app/hooks/useUpdateProduct";
+import { fetchProductBySlug } from "@/redux/slices/productsSlice";
 
-// SafeImage Component
 function SafeImage({ src, alt, className, ...props }) {
   const [imgSrc, setImgSrc] = useState(src);
 
@@ -36,100 +35,21 @@ export default function SingleProductPage() {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
 
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { handleDelete } = useDeleteProduct(token);
+  const { handleUpdate } = useUpdateProduct(token);
+
   const [editingProduct, setEditingProduct] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
 
-  // Fetch product
-  const fetchProduct = useCallback(async () => {
-    if (!slug || !token) return;
-    try {
-      setLoading(true);
-      const res = await fetch(`https://api.bitechx.com/products/${slug}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error(`Failed to fetch product. Status: ${res.status}`);
-      const data = await res.json();
-      setProduct(data[0] || data);
-      setCurrentImage(0);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [slug, token]);
+  const { singleProduct: product, loadingSingle: loading, errorSingle: error } =
+    useSelector((state) => state.products);
 
+  // Fetch product by slug
   useEffect(() => {
-    fetchProduct();
-  }, [fetchProduct]);
-
-  // Delete product
-  const handleDelete = useCallback(async () => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      const res = await fetch(`https://api.bitechx.com/products/${product.id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to delete product");
-
-      dispatch(fetchProducts({ token, offset: 0 }));
-      Swal.fire("Deleted!", "The product has been deleted.", "success");
-      router.push("/products");
-    } catch (err) {
-      Swal.fire("Error!", err.message, "error");
+    if (slug && token) {
+      dispatch(fetchProductBySlug({ token, slug }));
     }
-  }, [product, token, dispatch, router]);
-
-  // Update product with confirmation
-  const handleUpdate = useCallback(
-    async (payload) => {
-      const result = await Swal.fire({
-        title: "Confirm Update?",
-        text: "Do you want to update the product details?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Update",
-        cancelButtonText: "Cancel",
-      });
-
-      if (!result.isConfirmed) return;
-
-      try {
-        const res = await fetch(`https://api.bitechx.com/products/${product.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!res.ok) throw new Error("Failed to update product");
-        const updatedProduct = await res.json();
-        setProduct(updatedProduct);
-        setEditingProduct(false);
-        setCurrentImage(0);
-        Swal.fire("Updated!", "Product updated successfully.", "success");
-      } catch (err) {
-        Swal.fire("Error!", err.message, "error");
-      }
-    },
-    [product, token]
-  );
+  }, [dispatch, slug, token]);
 
   const handlePrevImage = () =>
     setCurrentImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
@@ -138,7 +58,8 @@ export default function SingleProductPage() {
 
   if (!token) return <p className="text-[#EEF1EF]">Please login to view this product.</p>;
   if (loading) return <Loader />;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (error) return <p className="text-red-500">{error?.message || JSON.stringify(error)}</p>;
+
   if (!product) return <p className="text-[#EEF1EF]">Product not found</p>;
 
   return (
@@ -153,7 +74,7 @@ export default function SingleProductPage() {
       <h1 className="text-4xl font-bold mb-8">{product.name}</h1>
 
       <div className="flex flex-col md:flex-row gap-8">
-        {/* Left: Images */}
+        {/* Image Section */}
         <div className="flex-1">
           <div className="relative w-full h-96 rounded-xl overflow-hidden bg-gradient-to-br from-[#7D98A1]/20 via-[#5E6572]/20 to-[#A9B4C2]/20 backdrop-blur-md shadow-lg flex items-center justify-center">
             {product.images?.[currentImage] ? (
@@ -201,7 +122,7 @@ export default function SingleProductPage() {
           )}
         </div>
 
-        {/* Right: Info */}
+        {/* Info Section */}
         <div className="flex-1 flex flex-col gap-4">
           <p className="text-2xl font-bold text-green-400">${product.price}</p>
 
@@ -212,7 +133,9 @@ export default function SingleProductPage() {
                   <SafeImage src={product.category.image} alt={product.category.name} className="object-cover w-full h-full" />
                 </div>
               )}
-              <p className="text-sm">Category: <span className="font-semibold">{product.category.name}</span></p>
+              <p className="text-sm">
+                Category: <span className="font-semibold">{product.category.name}</span>
+              </p>
             </div>
           )}
 
@@ -226,7 +149,6 @@ export default function SingleProductPage() {
             <p>Updated: {new Date(product.updatedAt).toLocaleDateString()}</p>
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-3 mt-4">
             <button
               onClick={() => setEditingProduct(true)}
@@ -235,7 +157,7 @@ export default function SingleProductPage() {
               Edit
             </button>
             <button
-              onClick={handleDelete}
+              onClick={() => handleDelete(product.id)}
               className="flex-1 px-4 py-2 rounded-md text-white bg-red-400 border border-red-300 transition transform hover:scale-105 hover:animate-shake"
             >
               Delete
@@ -254,20 +176,19 @@ export default function SingleProductPage() {
             >
               &times;
             </button>
-            <ProductForm product={product} onSubmit={handleUpdate} />
+            <ProductForm
+              product={product}
+              onSubmit={(payload) =>
+                handleUpdate(product.id, payload, (updatedProduct) => {
+  setEditingProduct(false);
+  router.push(`/products/${updatedProduct.slug}`);
+})
+
+              }
+            />
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-2px); }
-          50% { transform: translateX(2px); }
-          75% { transform: translateX(-2px); }
-        }
-        .animate-shake { animation: shake 0.3s ease-in-out; }
-      `}</style>
     </div>
   );
 }
